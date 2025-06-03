@@ -15,7 +15,7 @@ export default {
     	extend: {
     		fontFamily: {
     			sans: [
-    				'Figtree',
+    				'Archivo',
                     ...defaultTheme.fontFamily.sans
                 ]
     		},
@@ -27,6 +27,7 @@ export default {
     		colors: {
     			background: 'hsl(var(--background))',
     			foreground: 'hsl(var(--foreground))',
+                aglet: '#0000FF',
     			card: {
     				DEFAULT: 'hsl(var(--card))',
     				foreground: 'hsl(var(--card-foreground))'

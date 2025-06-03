@@ -1,12 +1,14 @@
 import { Head, Link} from '@inertiajs/react';
-import { useState } from "react";
-import { Play, Plus, Star, X, Clock, Calendar, Search } from "lucide-react";
+import {useMemo, useState} from "react";
+import { Play, Plus, Star, X, Clock, Calendar, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export default function Movies({ auth, movies}) {
-    const [selectedMovie, setSelectedMovie] = useState(null);
-    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedMovie, setSelectedMovie] = useState(null)
+    const [searchQuery, setSearchQuery] = useState("")
+    const [currentPage, setCurrentPage] = useState(1)
+    const moviesPerPage = 9
 
     const openModal = (movie) => {
         setSelectedMovie(movie)
@@ -17,6 +19,45 @@ export default function Movies({ auth, movies}) {
         setSelectedMovie(null)
         document.body.style.overflow = "unset"
     }
+
+    // Filter movies based on search query
+    const filteredMovies = useMemo(() => {
+        return movies.filter(
+            (movie) =>
+                movie.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                movie.genre.some((g) => g.toLowerCase().includes(searchQuery.toLowerCase())),
+        )
+    }, [searchQuery])
+
+    // Calculate pagination
+    const totalPages = Math.ceil(filteredMovies.length / moviesPerPage)
+    const indexOfLastMovie = currentPage * moviesPerPage
+    const indexOfFirstMovie = indexOfLastMovie - moviesPerPage
+    const currentMovies = filteredMovies.slice(indexOfFirstMovie, indexOfLastMovie)
+
+    // Handle page changes
+    const paginate = (pageNumber) => {
+        setCurrentPage(pageNumber)
+        // Scroll to top of movies section
+        document.getElementById("movies-section")?.scrollIntoView({ behavior: "smooth" })
+    }
+
+    const nextPage = () => {
+        if (currentPage < totalPages) {
+            paginate(currentPage + 1)
+        }
+    }
+
+    const prevPage = () => {
+        if (currentPage > 1) {
+            paginate(currentPage - 1)
+        }
+    }
+
+    // Reset to first page when search query changes
+    useMemo(() => {
+        setCurrentPage(1)
+    }, [searchQuery])
 
     return (
         <>
@@ -75,50 +116,100 @@ export default function Movies({ auth, movies}) {
                 </section>
 
                 {/* Movies Grid */}
-                <section className="container mx-auto px-4 py-16">
+                <section id="movies-section" className="container mx-auto px-4 py-16">
                     <h3 className="text-3xl font-bold mb-8">
                         {searchQuery ? `Search results for "${searchQuery}"` : "Popular Movies"}
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                        {movies
-                            .filter(
-                                (movie) =>
-                                    movie.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                    movie.genre.some((g) => g.toLowerCase().includes(searchQuery.toLowerCase())),
-                            )
-                            .map((movie) => (
-                                <div
-                                    key={movie.id}
-                                    className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
-                                    onClick={() => openModal(movie)}
-                                >
-                                    <div className="relative overflow-hidden rounded-lg bg-gray-800">
-                                        <img
-                                            src={movie.poster || "/placeholder.svg"}
-                                            alt={movie.title}
-                                            className="w-full h-64 md:h-80 object-cover transition-transform duration-300 group-hover:scale-110"
-                                        />
-                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                            <Play className="w-12 h-12 text-white" />
-                                        </div>
-                                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black to-transparent">
-                                            <h4 className="font-semibold text-sm truncate">{movie.title}</h4>
-                                            <p className="text-xs text-gray-300">{movie.year}</p>
-                                        </div>
+                        {currentMovies.map((movie) => (
+                            <div
+                                key={movie.id}
+                                className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
+                                onClick={() => openModal(movie)}
+                            >
+                                <div className="relative overflow-hidden rounded-lg bg-gray-800">
+                                    <img
+                                        src={movie.poster || "/placeholder.svg"}
+                                        alt={movie.title}
+                                        className="w-full h-64 md:h-80 object-cover transition-transform duration-300 group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                        <Play className="w-12 h-12 text-white" />
+                                    </div>
+                                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black to-transparent">
+                                        <h4 className="font-semibold text-sm truncate">{movie.title}</h4>
+                                        <p className="text-xs text-gray-300">{movie.year}</p>
                                     </div>
                                 </div>
-                            ))}
-                    </div>
-                    {movies.filter(
-                            (movie) =>
-                                movie.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                movie.genre.some((g) => g.toLowerCase().includes(searchQuery.toLowerCase())),
-                        ).length === 0 &&
-                        searchQuery && (
-                            <div className="text-center py-16">
-                                <p className="text-gray-400 text-lg">No movies found matching "{searchQuery}"</p>
                             </div>
-                        )}
+                        ))}
+                    </div>
+
+                    {filteredMovies.length === 0 && searchQuery && (
+                        <div className="text-center py-16">
+                            <p className="text-gray-400 text-lg">No movies found matching "{searchQuery}"</p>
+                        </div>
+                    )}
+
+                    {/* Pagination */}
+                    {filteredMovies.length > 0 && (
+                        <div className="flex justify-center items-center mt-12 space-x-2">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={prevPage}
+                                disabled={currentPage === 1}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                                <span className="sr-only">Previous page</span>
+                            </Button>
+
+                            <div className="flex items-center space-x-1">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => {
+                                    // Show limited page numbers with ellipsis for better UX
+                                    if (number === 1 || number === totalPages || (number >= currentPage - 1 && number <= currentPage + 1)) {
+                                        return (
+                                            <Button
+                                                key={number}
+                                                variant={currentPage === number ? "default" : "outline"}
+                                                size="sm"
+                                                className={`min-w-[40px] ${
+                                                    currentPage === number
+                                                        ? "bg-red-600 hover:bg-red-700 text-white"
+                                                        : "border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
+                                                }`}
+                                                onClick={() => paginate(number)}
+                                            >
+                                                {number}
+                                            </Button>
+                                        )
+                                    } else if (
+                                        (number === currentPage - 2 && currentPage > 3) ||
+                                        (number === currentPage + 2 && currentPage < totalPages - 2)
+                                    ) {
+                                        return (
+                                            <span key={number} className="text-gray-500 px-2">
+                      ...
+                    </span>
+                                        )
+                                    }
+                                    return null
+                                })}
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                onClick={nextPage}
+                                disabled={currentPage === totalPages}
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                                <span className="sr-only">Next page</span>
+                            </Button>
+                        </div>
+                    )}
                 </section>
 
                 {/* Modal */}
