@@ -14,4 +14,9 @@ class Movie extends Model
     protected $casts = [
         'genre_ids' => 'array'
     ];
+
+    public function genres(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Genre::class, 'movie_genres');
+    }
 }

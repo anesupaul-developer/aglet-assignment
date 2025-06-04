@@ -2,31 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MovieResource;
+use App\Models\Movie;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class MovieListingController extends Controller
 {
-    public function index(Request $request): \Inertia\Response
+    public function index(Request $request)
     {
-        $movies = [
-            [
-                'id' => 1,
-                'title' => 'Inception',
-                'year' => 2010,
-                'genre' => ['Sci-Fi', 'Thriller'],
-                'duration' => '2h 28m',
-                'rating' => 8.8,
-                'synopsis' => 'A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.',
-                'cast' => ['Leonardo DiCaprio', 'Marion Cotillard', 'Tom Hardy', 'Elliot Page'],
-                'director' => 'Christopher Nolan',
-                'poster' => 'https://www.jetblue.com/magnoliapublic/dam/ui-assets/imagery/info-assets/movies/2025/mar/Moana-2.jpg',
-                'backdrop' => '/placeholder.svg?height=400&width=800',
-            ]
-        ];
+        $search = $request->get('q') ?: null;
+
+        $movies = Movie::with('genres')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%")
+                        ->orWhereHas('genres', function ($q2) use ($search) {
+                            $q2->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->paginate(9)
+            ->withQueryString();
 
         return Inertia::render('Movies', [
-            'movies' => $movies,
+            'movies' => MovieResource::collection($movies),
         ]);
     }
 }

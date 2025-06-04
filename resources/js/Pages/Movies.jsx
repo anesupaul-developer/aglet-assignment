@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/badge";
 export default function Movies({ auth, movies}) {
     const [selectedMovie, setSelectedMovie] = useState(null)
     const [searchQuery, setSearchQuery] = useState("")
-    const [currentPage, setCurrentPage] = useState(1)
-    const moviesPerPage = 9
+    const [currentPage, setCurrentPage] = useState(movies.meta.current_page)
+    const moviesPerPage = movies.meta.per_page;
+
+    console.log(JSON.stringify(movies, null, 4));
 
     const openModal = (movie) => {
         setSelectedMovie(movie)
@@ -22,7 +24,7 @@ export default function Movies({ auth, movies}) {
 
     // Filter movies based on search query
     const filteredMovies = useMemo(() => {
-        return movies.filter(
+        return movies.data.filter(
             (movie) =>
                 movie.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 movie.genre.some((g) => g.toLowerCase().includes(searchQuery.toLowerCase())),
@@ -30,16 +32,20 @@ export default function Movies({ auth, movies}) {
     }, [searchQuery])
 
     // Calculate pagination
-    const totalPages = Math.ceil(filteredMovies.length / moviesPerPage)
-    const indexOfLastMovie = currentPage * moviesPerPage
+    const totalPages = Math.ceil(movies.meta.total / movies.meta.per_page);
+    const indexOfLastMovie = currentPage * movies.meta.per_page;
     const indexOfFirstMovie = indexOfLastMovie - moviesPerPage
     const currentMovies = filteredMovies.slice(indexOfFirstMovie, indexOfLastMovie)
 
     // Handle page changes
-    const paginate = (pageNumber) => {
-        setCurrentPage(pageNumber)
+    const paginate = (pageLink) => {
+        setCurrentPage(+pageLink.label);
         // Scroll to top of movies section
-        document.getElementById("movies-section")?.scrollIntoView({ behavior: "smooth" })
+        document.getElementById("movies-section")?.scrollIntoView({ behavior: "smooth" });
+
+        console.log(pageLink);
+
+        window.location.url = pageLink.url;
     }
 
     const nextPage = () => {
@@ -56,7 +62,7 @@ export default function Movies({ auth, movies}) {
 
     // Reset to first page when search query changes
     useMemo(() => {
-        setCurrentPage(1)
+        setCurrentPage(movies.meta.current_page)
     }, [searchQuery])
 
     return (
@@ -166,30 +172,31 @@ export default function Movies({ auth, movies}) {
                             </Button>
 
                             <div className="flex items-center space-x-1">
-                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => {
+                                {movies.meta.links.map((pageLink) => {
+                                    console.log(pageLink.url);
                                     // Show limited page numbers with ellipsis for better UX
-                                    if (number === 1 || number === totalPages || (number >= currentPage - 1 && number <= currentPage + 1)) {
+                                    if (pageLink.url && ! pageLink.label?.includes('Next')) {
                                         return (
                                             <Button
-                                                key={number}
-                                                variant={currentPage === number ? "default" : "outline"}
+                                                key={pageLink.label}
+                                                variant={currentPage === +pageLink.label ? "default" : "outline"}
                                                 size="sm"
                                                 className={`min-w-[40px] ${
-                                                    currentPage === number
+                                                    currentPage === +pageLink.label
                                                         ? "bg-red-600 hover:bg-red-700 text-white"
                                                         : "border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
                                                 }`}
-                                                onClick={() => paginate(number)}
+                                                onClick={() => paginate(pageLink)}
                                             >
-                                                {number}
+                                                {pageLink.label}
                                             </Button>
                                         )
                                     } else if (
-                                        (number === currentPage - 2 && currentPage > 3) ||
-                                        (number === currentPage + 2 && currentPage < totalPages - 2)
+                                        (+pageLink.label === currentPage - 2 && currentPage > 3) ||
+                                        (+pageLink.label === currentPage + 2 && currentPage < totalPages - 2)
                                     ) {
                                         return (
-                                            <span key={number} className="text-gray-500 px-2">
+                                            <span key={pageLink.label} className="text-gray-500 px-2">
                       ...
                     </span>
                                         )
