@@ -3,6 +3,7 @@
 namespace App\Adapters;
 
 use App\Contracts\MovieSourceInterface;
+use App\Models\Genre;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Http;
 
 use Illuminate\Support\Str;
 use function config;
+use function json_encode;
 use const PHP_EOL;
 
 final class TmdbMovieAdapter implements MovieSourceInterface
@@ -54,6 +56,7 @@ final class TmdbMovieAdapter implements MovieSourceInterface
                     ->append($movie['backdrop_path'])
                     ->toString(),
                 'source_id' => $movie['id'],
+                'genre_ids' => $movie['genre_ids'],
                 'original_language' => $movie['original_language'],
                 'original_title' => $movie['original_title'],
                 'description' => $movie['overview'],
@@ -71,5 +74,39 @@ final class TmdbMovieAdapter implements MovieSourceInterface
         });
 
         return $response->toArray();
+    }
+
+    /**
+     * @throws RequestException
+     * @throws ConnectionException
+     */
+    public function genre(): void
+    {
+        echo 'Getting genre ....'.PHP_EOL;
+
+        $alreadyHasGenre = Cache::get('tmdb_genre');
+
+        // Since we just want 45 records, we stop at page 3
+
+        if (empty($alreadyHasGenre)) {
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer '.config('services.movies.tmdb.access_token'),
+                'accept' => 'application/json'])
+                ->get('https://api.themoviedb.org/3/genre/movie/list?language=en')
+                ->throw()
+                ->json();
+
+            $genres = collect($response['genres'])->map(function ($genre) {
+                return [
+                    'provider' => config('services.movies.provider'),
+                    'source_id' => $genre['id'],
+                    'name' => $genre['name']
+                ];
+            });
+
+            Genre::query()->insert($genres->toArray());
+
+            Cache::put('tmdb_genre',"ok", 365 * 24 * 60 * 60);
+        }
     }
 }

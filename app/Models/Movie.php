@@ -10,4 +10,8 @@ class Movie extends Model
     use SoftDeletes;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'genre_ids' => 'array'
+    ];
 }

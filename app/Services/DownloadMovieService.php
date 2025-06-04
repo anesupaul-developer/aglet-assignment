@@ -13,18 +13,22 @@ final class DownloadMovieService
 
     public function download(): void
     {
+        $this->movieSource->genre();
+
         $raw = $this->movieSource->download();
 
         if (! empty($raw)) {
-            $data = $this->movieSource->transform($raw);
+            $movies = $this->movieSource->transform($raw);
 
-            // In case of larger data sets
+            // Should have used bulk insert but since I am listening to events have to use create
+            foreach($movies as $movie) {
+                Movie::query()->updateOrCreate([
+                    'provider' => $movie['provider'],
+                    'source_id' => $movie['source_id']
+                ],$movie);
+            }
 
-            collect($data)->chunk(1000)->each(function ($chunk) {
-                Movie::query()->insert($chunk->toArray());
-            });
-
-            echo "Inserted ".count($data).' new records....'.PHP_EOL;
+            echo "Inserted ".count($movies).' new records....'.PHP_EOL;
 
             return;
         }

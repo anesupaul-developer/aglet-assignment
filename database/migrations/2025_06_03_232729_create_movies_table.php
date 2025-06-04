@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use phpDocumentor\Reflection\Types\Nullable;
 
 return new class extends Migration
 {
@@ -14,6 +15,7 @@ return new class extends Migration
         Schema::create('movies', function (Blueprint $table) {
             $table->id();
             $table->string('provider')->default('tmdb');
+            $table->json('genre_ids')->nullable();
             $table->boolean('adult')->default(false);
             $table->string('backdrop_url')->nullable();
             $table->unsignedBigInteger('source_id')->nullable();
