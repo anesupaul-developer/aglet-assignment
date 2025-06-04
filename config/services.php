@@ -40,7 +40,7 @@ return [
         'tmdb' => [
             'access_token' => env('TMDB_MOVIE_ACCESS_TOKEN'),
             'api_key' => env('TMDB_MOVIE_API_KEY')
-        ]
-    ]
+        ],
+    ],
 
 ];

@@ -90,9 +90,8 @@ class MovieListingController extends Controller
             ],
         ];
 
-
         return Inertia::render('Movies', [
-            'movies' => $movies
+            'movies' => $movies,
         ]);
     }
 }
