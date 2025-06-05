@@ -49,7 +49,7 @@ class FavouriteMovieController extends Controller
         ]);
     }
 
-    public function delete(FavouriteMovie $favouriteMovie): \Illuminate\Http\JsonResponse
+    public function destroy(FavouriteMovie $favouriteMovie): \Illuminate\Http\JsonResponse
     {
         $favouriteMovie->delete();
 

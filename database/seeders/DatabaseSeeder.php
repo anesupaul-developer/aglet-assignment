@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -19,11 +18,11 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Team Aglet',
                 'username' => 'jointheteam',
                 'email' => 'jointheteam@aglet.co.za',
-                'password' => Hash::make('@TeamAglet')
-            ]
+                'password' => '@TeamAglet',
+            ],
         ];
 
-        foreach($users as $user) {
+        foreach ($users as $user) {
             $exists = User::query()
                 ->where('email', $user['email'])
                 ->orWhere('username', 'jointheteam')
