@@ -17,6 +17,9 @@ Route::get('/', function () {
 
 Route::get('/movies', [MovieListingController::class, 'index'])->name('movie-listing.index');
 
+Route::get('/movies/autocomplete', [MovieListingController::class, 'autocomplete'])
+    ->name('movie-listing.autocomplete');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

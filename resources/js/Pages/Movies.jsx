@@ -1,16 +1,15 @@
-import { Head, Link} from '@inertiajs/react';
-import {useMemo, useState} from "react";
+import { Head, Link, router } from '@inertiajs/react';
+import {useMemo, useState, useEffect} from "react";
 import { Play, Plus, Star, X, Clock, Calendar, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Pagination from "@/Components/Pagination.jsx";
 
-export default function Movies({ auth, movies}) {
+export default function Movies({ auth, movies: initialMovies}) {
     const [selectedMovie, setSelectedMovie] = useState(null)
     const [searchQuery, setSearchQuery] = useState("")
-    const [currentPage, setCurrentPage] = useState(movies.meta.current_page)
+    const [movies, setMovies] = useState(initialMovies);
     const moviesPerPage = movies.meta.per_page;
-
-    console.log(JSON.stringify(movies, null, 4));
 
     const openModal = (movie) => {
         setSelectedMovie(movie)
@@ -22,48 +21,36 @@ export default function Movies({ auth, movies}) {
         document.body.style.overflow = "unset"
     }
 
-    // Filter movies based on search query
-    const filteredMovies = useMemo(() => {
-        return movies.data.filter(
-            (movie) =>
-                movie.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                movie.genre.some((g) => g.toLowerCase().includes(searchQuery.toLowerCase())),
-        )
-    }, [searchQuery])
+    const afterPagination = ({props : { movies }}) => {
+        setMovies(movies);
+    }
 
-    // Calculate pagination
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const params = { page: 1 };
+
+            if (searchQuery && searchQuery.trim() !== "") {
+                params.search = searchQuery.trim();
+            }
+
+            router.get('/movies', params, {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+                onSuccess: (page) => {
+                    setMovies(page.props.movies);
+                    console.log(page.props.movies);
+                }
+            });
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
     const totalPages = Math.ceil(movies.meta.total / movies.meta.per_page);
-    const indexOfLastMovie = currentPage * movies.meta.per_page;
+    const indexOfLastMovie = movies.meta.current_page * movies.meta.per_page;
     const indexOfFirstMovie = indexOfLastMovie - moviesPerPage
-    const currentMovies = filteredMovies.slice(indexOfFirstMovie, indexOfLastMovie)
-
-    // Handle page changes
-    const paginate = (pageLink) => {
-        setCurrentPage(+pageLink.label);
-        // Scroll to top of movies section
-        document.getElementById("movies-section")?.scrollIntoView({ behavior: "smooth" });
-
-        console.log(pageLink);
-
-        window.location.url = pageLink.url;
-    }
-
-    const nextPage = () => {
-        if (currentPage < totalPages) {
-            paginate(currentPage + 1)
-        }
-    }
-
-    const prevPage = () => {
-        if (currentPage > 1) {
-            paginate(currentPage - 1)
-        }
-    }
-
-    // Reset to first page when search query changes
-    useMemo(() => {
-        setCurrentPage(movies.meta.current_page)
-    }, [searchQuery])
+    const currentMovies = movies.data.slice(indexOfFirstMovie, indexOfLastMovie);
 
     return (
         <>
@@ -127,7 +114,7 @@ export default function Movies({ auth, movies}) {
                         {searchQuery ? `Search results for "${searchQuery}"` : "Popular Movies"}
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                        {currentMovies.map((movie) => (
+                        {movies.data.map((movie) => (
                             <div
                                 key={movie.id}
                                 className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
@@ -151,73 +138,14 @@ export default function Movies({ auth, movies}) {
                         ))}
                     </div>
 
-                    {filteredMovies.length === 0 && searchQuery && (
+                    {movies.data.length === 0 && searchQuery && (
                         <div className="text-center py-16">
                             <p className="text-gray-400 text-lg">No movies found matching "{searchQuery}"</p>
                         </div>
                     )}
-
-                    {/* Pagination */}
-                    {filteredMovies.length > 0 && (
-                        <div className="flex justify-center items-center mt-12 space-x-2">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                                onClick={prevPage}
-                                disabled={currentPage === 1}
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                                <span className="sr-only">Previous page</span>
-                            </Button>
-
-                            <div className="flex items-center space-x-1">
-                                {movies.meta.links.map((pageLink) => {
-                                    console.log(pageLink.url);
-                                    // Show limited page numbers with ellipsis for better UX
-                                    if (pageLink.url && ! pageLink.label?.includes('Next')) {
-                                        return (
-                                            <Button
-                                                key={pageLink.label}
-                                                variant={currentPage === +pageLink.label ? "default" : "outline"}
-                                                size="sm"
-                                                className={`min-w-[40px] ${
-                                                    currentPage === +pageLink.label
-                                                        ? "bg-red-600 hover:bg-red-700 text-white"
-                                                        : "border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
-                                                }`}
-                                                onClick={() => paginate(pageLink)}
-                                            >
-                                                {pageLink.label}
-                                            </Button>
-                                        )
-                                    } else if (
-                                        (+pageLink.label === currentPage - 2 && currentPage > 3) ||
-                                        (+pageLink.label === currentPage + 2 && currentPage < totalPages - 2)
-                                    ) {
-                                        return (
-                                            <span key={pageLink.label} className="text-gray-500 px-2">
-                      ...
-                    </span>
-                                        )
-                                    }
-                                    return null
-                                })}
-                            </div>
-
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                                onClick={nextPage}
-                                disabled={currentPage === totalPages}
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                                <span className="sr-only">Next page</span>
-                            </Button>
-                        </div>
-                    )}
                 </section>
+
+                <Pagination items={movies} scrollPosId={"movies-section"} searchQuery={searchQuery} callBack={afterPagination}/>
 
                 {/* Modal */}
                 {selectedMovie && (
@@ -280,16 +208,6 @@ export default function Movies({ auth, movies}) {
 
                                         <p className="text-gray-300 mb-6 leading-relaxed">{selectedMovie.synopsis}</p>
 
-                                        <div className="mb-6">
-                                            <h4 className="font-semibold mb-2">Director</h4>
-                                            <p className="text-gray-300">{selectedMovie.director}</p>
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <h4 className="font-semibold mb-2">Cast</h4>
-                                            <p className="text-gray-300">{selectedMovie.cast.join(", ")}</p>
-                                        </div>
-
                                         <div className="flex flex-col sm:flex-row gap-3">
                                             <Button className="bg-red-600 hover:bg-red-700 flex items-center gap-2">
                                                 <Play className="w-4 h-4" />
@@ -297,12 +215,12 @@ export default function Movies({ auth, movies}) {
                                             </Button>
                                             <Button
                                                 variant="outline"
-                                                className="border-gray-600 text-white hover:bg-gray-800 flex items-center gap-2"
+                                                className="border-pink-600 bg-pink-800 hover:bg-pink-700 hover:text-white flex items-center gap-2"
                                             >
                                                 <Plus className="w-4 h-4" />
                                                 Add to Watchlist
                                             </Button>
-                                            <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-800">
+                                            <Button variant="outline" className="border-rose-600 bg-orange-900 hover:bg-orange-700 hover:text-white">
                                                 Watch Trailer
                                             </Button>
                                         </div>

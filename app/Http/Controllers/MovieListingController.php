@@ -11,7 +11,7 @@ class MovieListingController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->get('q') ?: null;
+        $search = $request->input('search') ?: null;
 
         $movies = Movie::with('genres')
             ->when($search, function ($query, $search) {
@@ -29,5 +29,16 @@ class MovieListingController extends Controller
         return Inertia::render('Movies', [
             'movies' => MovieResource::collection($movies),
         ]);
+    }
+
+    public function autocomplete(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $query = $request->input('search');
+
+        $results = Movie::query()->where('title', 'like', "%{$query}%")
+            ->limit(10)
+            ->pluck('title');
+
+        return response()->json($results);
     }
 }
