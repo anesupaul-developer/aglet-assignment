@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Movie;
 use Illuminate\Support\Facades\DB;
+
 use function intval;
 
 class MovieObserver
@@ -18,13 +19,13 @@ class MovieObserver
         if (! empty($genreIds)) {
             $data = [];
 
-            foreach($genreIds as $genreId) {
+            foreach ($genreIds as $genreId) {
                 $data[] = [
                     'movie_id' => $movie->id,
                     'genre_id' => DB::table('genres')
                         ->where('provider', $movie->getAttribute('provider'))
                         ->where('source_id', intval($genreId))
-                        ->value('id')
+                        ->value('id'),
                 ];
             }
 

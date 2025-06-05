@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use const PHP_EOL;
+
 use App\Contracts\MovieSourceInterface;
 use App\Models\Movie;
+
 use function count;
-use const PHP_EOL;
 
 final class DownloadMovieService
 {
@@ -21,18 +23,18 @@ final class DownloadMovieService
             $movies = $this->movieSource->transform($raw);
 
             // Should have used bulk insert but since I am listening to events have to use create
-            foreach($movies as $movie) {
+            foreach ($movies as $movie) {
                 Movie::query()->updateOrCreate([
                     'provider' => $movie['provider'],
-                    'source_id' => $movie['source_id']
-                ],$movie);
+                    'source_id' => $movie['source_id'],
+                ], $movie);
             }
 
-            echo "Inserted ".count($movies).' new records....'.PHP_EOL;
+            echo 'Inserted '.count($movies).' new records....'.PHP_EOL;
 
             return;
         }
 
-        echo "No records fetched !".PHP_EOL;
+        echo 'No records fetched !'.PHP_EOL;
     }
 }

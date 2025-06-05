@@ -13,7 +13,7 @@ class Movie extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'genre_ids' => 'array'
+        'genre_ids' => 'array',
     ];
 
     protected static function booted()

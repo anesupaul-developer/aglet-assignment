@@ -9,7 +9,7 @@ use Inertia\Inertia;
 
 class MovieListingController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): \Inertia\Response
     {
         $search = $request->input('search') ?: null;
 

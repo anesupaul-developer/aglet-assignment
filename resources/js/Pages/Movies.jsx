@@ -16,6 +16,20 @@ export default function Movies({ auth, movies: initialMovies}) {
         document.body.style.overflow = "hidden"
     }
 
+    const addToFavourite = (movieId) => {
+        router.post('/movies/favourites', {
+            movie_id: movieId,
+        }, {
+            preserveState: true,
+            onSuccess: (page) => {
+                console.log('Added to favourites!', page);
+            },
+            onError: (errors) => {
+                console.error('Failed:', errors);
+            }
+        });
+    }
+
     const closeModal = () => {
         setSelectedMovie(null)
         document.body.style.overflow = "unset"
@@ -131,7 +145,9 @@ export default function Movies({ auth, movies: initialMovies}) {
                                     </div>
                                     <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black to-transparent">
                                         <h4 className="font-semibold text-sm truncate">{movie.title}</h4>
-                                        <p className="text-xs text-gray-300">{movie.year}</p>
+                                        <p className="text-xs text-gray-300">
+                                            <b>{movie.date}</b>
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -186,7 +202,7 @@ export default function Movies({ auth, movies: initialMovies}) {
                                         <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-gray-300">
                                             <div className="flex items-center gap-1">
                                                 <Calendar className="w-4 h-4" />
-                                                {selectedMovie.year}
+                                                {selectedMovie.date}
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 <Clock className="w-4 h-4" />
@@ -220,8 +236,11 @@ export default function Movies({ auth, movies: initialMovies}) {
                                                 <Plus className="w-4 h-4" />
                                                 Add to Watchlist
                                             </Button>
-                                            <Button variant="outline" className="border-rose-600 bg-orange-900 hover:bg-orange-700 hover:text-white">
-                                                Watch Trailer
+                                            <Button variant="outline"
+                                                    className="border-emerald-700 bg-emerald-900 hover:bg-emerald-600 hover:text-white"
+                                                    onClick={() => addToFavourite(selectedMovie.id)}
+                                            >
+                                                Add To Favourite
                                             </Button>
                                         </div>
                                     </div>

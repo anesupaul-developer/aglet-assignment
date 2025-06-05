@@ -39,7 +39,7 @@ return [
         'provider' => env('DEFAULT_MOVIE_PROVIDER', 'tmdb'),
         'tmdb' => [
             'access_token' => env('TMDB_MOVIE_ACCESS_TOKEN'),
-            'api_key' => env('TMDB_MOVIE_API_KEY')
+            'api_key' => env('TMDB_MOVIE_API_KEY'),
         ],
     ],
 

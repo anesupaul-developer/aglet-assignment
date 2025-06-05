@@ -2,17 +2,17 @@
 
 namespace App\Adapters;
 
+use const PHP_EOL;
+
 use App\Contracts\MovieSourceInterface;
 use App\Models\Genre;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-
 use Illuminate\Support\Str;
+
 use function config;
-use function json_encode;
-use const PHP_EOL;
 
 final class TmdbMovieAdapter implements MovieSourceInterface
 {
@@ -26,7 +26,7 @@ final class TmdbMovieAdapter implements MovieSourceInterface
 
         $currentPage = Cache::get('tmdb_current_page') ?: 1;
 
-        echo "Page ".$currentPage.PHP_EOL;
+        echo 'Page '.$currentPage.PHP_EOL;
 
         // Since we just want 45 records, we stop at page 3
 
@@ -69,7 +69,7 @@ final class TmdbMovieAdapter implements MovieSourceInterface
                 'video' => $movie['video'] ?: null,
                 'average_votes' => $movie['vote_average'],
                 'votes' => $movie['vote_count'],
-                'provider' => config('services.movies.provider')
+                'provider' => config('services.movies.provider'),
             ];
         });
 
@@ -100,13 +100,13 @@ final class TmdbMovieAdapter implements MovieSourceInterface
                 return [
                     'provider' => config('services.movies.provider'),
                     'source_id' => $genre['id'],
-                    'name' => $genre['name']
+                    'name' => $genre['name'],
                 ];
             });
 
             Genre::query()->insert($genres->toArray());
 
-            Cache::put('tmdb_genre',"ok", 365 * 24 * 60 * 60);
+            Cache::put('tmdb_genre', 'ok', 365 * 24 * 60 * 60);
         }
     }
 }
