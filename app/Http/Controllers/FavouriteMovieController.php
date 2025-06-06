@@ -6,11 +6,11 @@ use App\Http\Requests\FavouriteMovieRequest;
 use App\Http\Resources\FavouriteMovieResource;
 use App\Models\FavouriteMovie;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 use function array_merge;
 use function auth;
-use function response;
 
 class FavouriteMovieController extends Controller
 {
@@ -19,6 +19,7 @@ class FavouriteMovieController extends Controller
         $search = $request->input('search') ?: null;
 
         $favouriteMovies = FavouriteMovie::with('movie')
+            ->where('user_id', auth()->user()->id)
             ->when($search, function ($query, $search) {
                 $query->whereHas('movie', function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
@@ -36,25 +37,24 @@ class FavouriteMovieController extends Controller
         ]);
     }
 
-    public function store(FavouriteMovieRequest $favouriteMovieRequest): \Illuminate\Http\JsonResponse
+    public function store(FavouriteMovieRequest $favouriteMovieRequest)
     {
         $data = $favouriteMovieRequest->validated();
 
-        $data = array_merge($data, ['user_id' => auth()->user()->id]);
+        $data = array_merge($data, ['user_id' => auth()->id()]);
 
         FavouriteMovie::query()->create($data);
 
-        return response()->json([
-            'message' => 'Movie added successfully!',
-        ]);
+        return Inertia::location(route('favourite-movies.index'));
     }
 
-    public function destroy(FavouriteMovie $favouriteMovie): \Illuminate\Http\JsonResponse
+    public function destroy($id)
     {
-        $favouriteMovie->delete();
+        FavouriteMovie::query()
+            ->where('movie_id', $id)
+            ->where('user_id', auth()->id())
+            ->delete();
 
-        return response()->json([
-            'message' => 'Movie deleted successfully!',
-        ]);
+        return Inertia::location(route('favourite-movies.index'));
     }
 }

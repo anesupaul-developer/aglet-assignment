@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Pagination from "@/Components/Pagination.jsx";
 
-export default function Movies({ auth, movies: initialMovies}) {
+export default function FavouriteMovies({ auth, favouriteMovies: initialFavouriteMovies}) {
     const [selectedMovie, setSelectedMovie] = useState(null)
     const [searchQuery, setSearchQuery] = useState("")
-    const [movies, setMovies] = useState(initialMovies);
-    const moviesPerPage = movies.meta.per_page;
+    const [favouriteMovies, setFavouriteMovies] = useState(initialFavouriteMovies);
+    const moviesPerPage = favouriteMovies.meta.per_page;
 
     const openModal = (movie) => {
         setSelectedMovie(movie)
@@ -17,15 +17,9 @@ export default function Movies({ auth, movies: initialMovies}) {
     }
 
     const addToFavourite = (movieId) => {
-        router.post('/favourite-movies', {
+        router.post('/movies/favourites', {
             movie_id: movieId,
         }, {
-            preserveState: true
-        });
-    }
-
-    const removeFromFavourite = (movieId) => {
-        router.delete(`/favourite-movies/${movieId}`, {
             preserveState: true
         });
     }
@@ -47,12 +41,13 @@ export default function Movies({ auth, movies: initialMovies}) {
                 params.search = searchQuery.trim();
             }
 
-            router.get('/movies', params, {
+            router.get('/favourite-movies', params, {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
                 onSuccess: (page) => {
-                    setMovies(page.props.movies);
+                    setFavouriteMovies(page.props.favouriteMovies);
+                    console.log(page.props.favouriteMovies);
                 }
             });
         }, 300);
@@ -60,10 +55,10 @@ export default function Movies({ auth, movies: initialMovies}) {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const totalPages = Math.ceil(movies.meta.total / movies.meta.per_page);
-    const indexOfLastMovie = movies.meta.current_page * movies.meta.per_page;
+    const totalPages = Math.ceil(favouriteMovies.meta.total / favouriteMovies.meta.per_page);
+    const indexOfLastMovie = favouriteMovies.meta.current_page * favouriteMovies.meta.per_page;
     const indexOfFirstMovie = indexOfLastMovie - moviesPerPage
-    const currentMovies = movies.data.slice(indexOfFirstMovie, indexOfLastMovie);
+    const currentMovies = favouriteMovies.data.slice(indexOfFirstMovie, indexOfLastMovie);
 
     return (
         <>
@@ -99,7 +94,6 @@ export default function Movies({ auth, movies: initialMovies}) {
                                 <a href="/favourite-movies" className="hover:text-red-500 transition-colors">
                                     My List
                                 </a>
-
                             </nav>
                         </div>
                     </div>
@@ -120,30 +114,30 @@ export default function Movies({ auth, movies: initialMovies}) {
                 </section>
 
                 {/* Movies Grid */}
-                <section id="movies-section" className="container mx-auto px-4 py-16">
+                <section id="favourite-movies-section" className="container mx-auto px-4 py-16">
                     <h3 className="text-3xl font-bold mb-8">
-                        {searchQuery ? `Search results for "${searchQuery}"` : "Popular Movies"}
+                        {searchQuery ? `Search results for "${searchQuery}"` : "Favourite Movies"}
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                        {movies.data.map((movie) => (
+                        {favouriteMovies.data.map((favouriteMovie) => (
                             <div
-                                key={movie.id}
+                                key={favouriteMovie.id}
                                 className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
-                                onClick={() => openModal(movie)}
+                                onClick={() => openModal(favouriteMovie.movie)}
                             >
                                 <div className="relative overflow-hidden rounded-lg bg-gray-800">
                                     <img
-                                        src={movie.poster || "/placeholder.svg"}
-                                        alt={movie.title}
+                                        src={favouriteMovie.movie.poster || "/images/placeholder.webp"}
+                                        alt={favouriteMovie.movie.title}
                                         className="w-full h-64 md:h-80 object-cover transition-transform duration-300 group-hover:scale-110"
                                     />
                                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                         <Play className="w-12 h-12 text-white" />
                                     </div>
                                     <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black to-transparent">
-                                        <h4 className="font-semibold text-sm truncate">{movie.title}</h4>
+                                        <h4 className="font-semibold text-sm truncate">{favouriteMovie.movie.title}</h4>
                                         <p className="text-xs text-gray-300">
-                                            <b>{movie.date}</b>
+                                            <b>{favouriteMovie.movie.date}</b>
                                         </p>
                                     </div>
                                 </div>
@@ -151,14 +145,14 @@ export default function Movies({ auth, movies: initialMovies}) {
                         ))}
                     </div>
 
-                    {movies.data.length === 0 && searchQuery && (
+                    {favouriteMovies.data.length === 0 && searchQuery && (
                         <div className="text-center py-16">
                             <p className="text-gray-400 text-lg">No movies found matching "{searchQuery}"</p>
                         </div>
                     )}
                 </section>
 
-                <Pagination items={movies} scrollPosId={"movies-section"} searchQuery={searchQuery} callBack={afterPagination}/>
+                <Pagination items={favouriteMovies} scrollPosId={"favourite-movies-section"} searchQuery={searchQuery} callBack={afterPagination}/>
 
                 {/* Modal */}
                 {selectedMovie && (
@@ -233,22 +227,12 @@ export default function Movies({ auth, movies: initialMovies}) {
                                                 <Plus className="w-4 h-4" />
                                                 Add to Watchlist
                                             </Button>
-
-                                            {
-                                                ! selectedMovie.is_favourite ?
-                                                    <Button variant="outline"
-                                                            className="border-emerald-700 bg-emerald-900 hover:bg-emerald-600 hover:text-white"
-                                                            onClick={() => addToFavourite(selectedMovie.id)}
-                                                    >
-                                                        Add To Favourite
-                                                    </Button> :
-                                                    <Button variant="outline"
-                                                            className="border-rose-700 bg-rose-900 hover:bg-rose-600 hover:text-white"
-                                                            onClick={() => removeFromFavourite(selectedMovie.id)}
-                                                    >
-                                                        Remove From Favourite
-                                                    </Button>
-                                            }
+                                            <Button variant="outline"
+                                                    className="border-emerald-700 bg-emerald-900 hover:bg-emerald-600 hover:text-white"
+                                                    onClick={() => addToFavourite(selectedMovie.id)}
+                                            >
+                                                Add To Favourite
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>
