@@ -1,6 +1,13 @@
 import {Search} from "lucide-react";
+import Dropdown from "@/Components/Dropdown.jsx";
+import {Button} from "@headlessui/react";
+import { LogOut } from "lucide-react"
+import {router} from "@inertiajs/react";
 
-const MovieHeader = ({searchQuery, setSearchQuery}) => {
+const MovieHeader = ({searchQuery, setSearchQuery, isLoggedIn}) => {
+    const handleLogout = () => {
+        router.post('/logout');
+    };
   return <>
       <header className="fixed top-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-md border-b border-gray-800">
           <div className="container mx-auto px-4 py-4">
@@ -22,15 +29,38 @@ const MovieHeader = ({searchQuery, setSearchQuery}) => {
                   </div>
 
                   <nav className="hidden md:flex space-x-6">
-                      <a href="/movies" className="hover:text-red-500 transition-colors">
-                          Home
-                      </a>
-                      <a href="/movies" className="hover:text-red-500 transition-colors">
-                          Movies
-                      </a>
-                      <a href="/favourite-movies" className="hover:text-red-500 transition-colors">
-                          My List
-                      </a>
+                      {
+                          ! isLoggedIn ?
+                              "" : <a href="/movies" className="hover:text-red-500 transition-colors">
+                                  Movies
+                              </a>
+                      }
+
+                      {
+                          isLoggedIn ?
+                              <a href="/favourite-movies" className="hover:text-red-500 transition-colors">
+                                  My List
+                              </a> : ""
+                      }
+
+                      {
+                          ! isLoggedIn ?
+                              <a href="/login" className="hover:text-red-500 transition-colors">
+                                  Login
+                              </a> : ""
+                      }
+
+
+                      { isLoggedIn ?
+                          <Button
+                              variant="outline"
+                              onClick={handleLogout}
+                              className="border-rose-500 bg-slate-900 text-white hover:bg-rose-50 hover:border-rose-600 hover:text-rose-600 font-medium px-6 rounded-lg transition-colors duration-200 flex items-center gap-2"
+                          >
+                              <LogOut className="w-4 h-4" />
+                              Log Out
+                          </Button> : ""
+                      }
                   </nav>
               </div>
           </div>

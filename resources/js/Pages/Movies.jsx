@@ -6,11 +6,13 @@ import MoviePopOver from "@/Components/Partials/MoviePopOver.jsx";
 import MovieHeader from "@/Components/Partials/MovieHeader.jsx";
 import MovieHeroAction from "@/Components/Partials/MovieHeroAction.jsx";
 import MovieGridSection from "@/Components/Partials/MovieGridSection.jsx";
+import AgletLayout from "@/Layouts/AgletLayout.jsx";
 
 export default function Movies({ auth, movies: initialMovies}) {
     const [selectedMovie, setSelectedMovie] = useState(null)
     const [searchQuery, setSearchQuery] = useState("")
     const [movies, setMovies] = useState(initialMovies);
+
     const moviesPerPage = movies.meta.per_page;
 
     const openModal = (movie) => {
@@ -48,17 +50,12 @@ export default function Movies({ auth, movies: initialMovies}) {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const totalPages = Math.ceil(movies.meta.total / movies.meta.per_page);
-    const indexOfLastMovie = movies.meta.current_page * movies.meta.per_page;
-    const indexOfFirstMovie = indexOfLastMovie - moviesPerPage
-    const currentMovies = movies.data.slice(indexOfFirstMovie, indexOfLastMovie);
-
     return (
-        <>
+        <AgletLayout>
             <Head title="Movies" />
             <div className="min-h-screen bg-black text-white">
 
-                <MovieHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery}/>
+                <MovieHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} isLoggedIn={auth?.user?.id}/>
 
                 <MovieHeroAction pageName="movies"/>
 
@@ -69,10 +66,10 @@ export default function Movies({ auth, movies: initialMovies}) {
 
                 <Pagination items={movies} scrollPosId={"movies-section"} searchQuery={searchQuery} callBack={afterPagination}/>
 
-                <MoviePopOver selectedMovie={selectedMovie} closeModal={closeModal}/>
+                <MoviePopOver selectedMovie={selectedMovie} closeModal={closeModal} isLoggedIn={auth?.user?.id}/>
 
                 <Footer/>
             </div>
-        </>
+        </AgletLayout>
     );
 }

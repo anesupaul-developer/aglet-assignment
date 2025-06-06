@@ -1,8 +1,7 @@
 import { usePage } from '@inertiajs/react';
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 import toast, {Toaster} from "react-hot-toast";
-
-export default function AuthenticatedLayout({children }) {
+export default function AgletLayout({children }) {
 
     const { flash } = usePage().props;
 

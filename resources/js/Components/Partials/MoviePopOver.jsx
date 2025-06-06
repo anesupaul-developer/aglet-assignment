@@ -3,18 +3,25 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {router} from "@inertiajs/react";
 
-const MoviePopOver = ({selectedMovie, closeModal}) => {
+const MoviePopOver = ({selectedMovie, closeModal, isLoggedIn, sliceMovie}) => {
     const addToFavourite = (movieId) => {
         router.post('/favourite-movies', {
             movie_id: movieId,
         }, {
-            preserveState: true
+            preserveState: true,
+            onSuccess: () => {
+                selectedMovie.is_favourite = !selectedMovie.is_favourite;
+            }
         });
     }
 
     const removeFromFavourite = (movieId) => {
         router.delete(`/favourite-movies/${movieId}`, {
-            preserveState: true
+            preserveState: true,
+            onSuccess: () => {
+                selectedMovie.is_favourite = !selectedMovie.is_favourite;
+                sliceMovie(selectedMovie);
+            }
         });
     }
 
@@ -94,15 +101,17 @@ const MoviePopOver = ({selectedMovie, closeModal}) => {
                                         </Button>
 
                                         {
-                                            selectedMovie.is_favourite ?
-                                                <Button
-                                                    variant="outline"
-                                                    className="border-amber-700 bg-amber-900 hover:bg-amber-600 hover:text-white"
-                                                    onClick={() => removeFromFavourite(selectedMovie.id)}
-                                                >
-                                                    Remove From Favourite
-                                                </Button>
-                                                :
+                                            selectedMovie.is_favourite ? (
+                                                isLoggedIn ? (
+                                                    <Button
+                                                        variant="outline"
+                                                        className="border-amber-700 bg-amber-900 hover:bg-amber-600 hover:text-white"
+                                                        onClick={() => removeFromFavourite(selectedMovie.id)}
+                                                    >
+                                                        Remove From Favourite
+                                                    </Button>
+                                                ) : null
+                                            ) : (
                                                 <Button
                                                     variant="outline"
                                                     className="border-emerald-700 bg-emerald-900 hover:bg-emerald-600 hover:text-white"
@@ -110,7 +119,9 @@ const MoviePopOver = ({selectedMovie, closeModal}) => {
                                                 >
                                                     Add To Favourite
                                                 </Button>
+                                            )
                                         }
+
                                     </div>
                                 </div>
                             </div>

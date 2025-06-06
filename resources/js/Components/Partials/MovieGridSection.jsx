@@ -1,4 +1,4 @@
-import {Play} from "lucide-react";
+import {Play, Film} from "lucide-react";
 
 const MovieGridSection = ({searchQuery, movies, openModal, defaultText}) => {
     return <>
@@ -33,11 +33,17 @@ const MovieGridSection = ({searchQuery, movies, openModal, defaultText}) => {
                 ))}
             </div>
 
-            {movies.data.length === 0 && searchQuery && (
-                <div className="text-center py-16">
-                    <p className="text-gray-400 text-lg">No movies found matching "{searchQuery}"</p>
-                </div>
-            )}
+            {
+                movies.data.length === 0 ? <div className="space-y-2">
+                    <h3 className="text-lg text-center font-semibold text-rose-900">Hope you didnt forget to run <b>php artisan app:download-movie</b></h3>
+                    <div className="bg-gradient-to-r from-rose-100 to-rose-100 border border-rose-200 rounded-lg p-6">
+                        <div className="flex items-center justify-center gap-3">
+                            <Film className="w-6 h-6 text-rose-600" />
+                            <h3 className="text-lg font-semibold text-rose-800">No Movies Found</h3>
+                        </div>
+                    </div>
+                </div> : ""
+            }
         </section>
 
     </>;

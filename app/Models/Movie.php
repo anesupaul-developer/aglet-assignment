@@ -35,6 +35,6 @@ class Movie extends Model
 
     public function isFavourite(): bool
     {
-        return $this->favourites()->where('user_id', auth()->id())->exists();
+        return $this->favourites()->where('user_id', 1)->exists();
     }
 }

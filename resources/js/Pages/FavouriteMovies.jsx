@@ -6,6 +6,7 @@ import Footer from "@/Components/Partials/Footer.jsx";
 import MoviePopOver from "@/Components/Partials/MoviePopOver.jsx";
 import MovieHeader from "@/Components/Partials/MovieHeader.jsx";
 import MovieHeroAction from "@/Components/Partials/MovieHeroAction.jsx";
+import AgletLayout from "@/Layouts/AgletLayout.jsx";
 
 export default function FavouriteMovies({ auth, favouriteMovies: initialFavouriteMovies}) {
     const [selectedMovie, setSelectedMovie] = useState(null)
@@ -29,6 +30,13 @@ export default function FavouriteMovies({ auth, favouriteMovies: initialFavourit
     const closeModal = () => {
         setSelectedMovie(null)
         document.body.style.overflow = "unset"
+    }
+
+    const removeMovie = (fm) => {
+        const index = favouriteMovies.data.findIndex(fav => fav.movie.id === fm.id);
+        if (index !== -1) {
+            favouriteMovies.splice(index, 1);
+        }
     }
 
     const afterPagination = ({props : { movies }}) => {
@@ -57,17 +65,12 @@ export default function FavouriteMovies({ auth, favouriteMovies: initialFavourit
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const totalPages = Math.ceil(favouriteMovies.meta.total / favouriteMovies.meta.per_page);
-    const indexOfLastMovie = favouriteMovies.meta.current_page * favouriteMovies.meta.per_page;
-    const indexOfFirstMovie = indexOfLastMovie - moviesPerPage
-    const currentMovies = favouriteMovies.data.slice(indexOfFirstMovie, indexOfLastMovie);
-
     return (
-        <>
+        <AgletLayout>
             <Head title="Movies" />
             <div className="min-h-screen bg-black text-white">
 
-                <MovieHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery}/>
+                <MovieHeader searchQuery={searchQuery} setSearchQuery={setSearchQuery} isLoggedIn={auth?.user?.id}/>
 
                 <MovieHeroAction pageName="favourites"/>
 
@@ -103,7 +106,7 @@ export default function FavouriteMovies({ auth, favouriteMovies: initialFavourit
                         ))}
                     </div>
 
-                    {favouriteMovies.data.length === 0 && searchQuery && (
+                    {favouriteMovies.data.length === 0 && (
                         <div className="text-center py-16">
                             <p className="text-gray-400 text-lg">No movies found matching "{searchQuery}"</p>
                         </div>
@@ -112,10 +115,10 @@ export default function FavouriteMovies({ auth, favouriteMovies: initialFavourit
 
                 <Pagination items={favouriteMovies} scrollPosId={"favourite-movies-section"} searchQuery={searchQuery} callBack={afterPagination}/>
 
-                <MoviePopOver selectedMovie={selectedMovie} closeModal={closeModal}/>
+                <MoviePopOver sliceMovie={removeMovie} selectedMovie={selectedMovie} closeModal={closeModal} isLoggedIn={auth?.user?.id}/>
 
                 <Footer/>
             </div>
-        </>
+        </AgletLayout>
     );
 }

@@ -11,6 +11,7 @@ use Inertia\Inertia;
 
 use function array_merge;
 use function auth;
+use function back;
 
 class FavouriteMovieController extends Controller
 {
@@ -19,7 +20,7 @@ class FavouriteMovieController extends Controller
         $search = $request->input('search') ?: null;
 
         $favouriteMovies = FavouriteMovie::with('movie')
-            ->where('user_id', auth()->user()->id)
+            ->where('user_id', 1)
             ->when($search, function ($query, $search) {
                 $query->whereHas('movie', function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
@@ -37,24 +38,24 @@ class FavouriteMovieController extends Controller
         ]);
     }
 
-    public function store(FavouriteMovieRequest $favouriteMovieRequest)
+    public function store(FavouriteMovieRequest $favouriteMovieRequest): \Illuminate\Http\RedirectResponse
     {
         $data = $favouriteMovieRequest->validated();
 
-        $data = array_merge($data, ['user_id' => auth()->id()]);
+        $data = array_merge($data, ['user_id' => 1]);
 
-        FavouriteMovie::query()->create($data);
+        FavouriteMovie::query()->updateOrCreate($data, $data);
 
-        return Inertia::location(route('favourite-movies.index'));
+        return back()->with('success', 'Movie added to favourites!');
     }
 
     public function destroy($id)
     {
         FavouriteMovie::query()
             ->where('movie_id', $id)
-            ->where('user_id', auth()->id())
+            ->where('user_id', 1)
             ->delete();
 
-        return Inertia::location(route('favourite-movies.index'));
+        return back()->with('success', 'Movie removed from favourites!');
     }
 }
