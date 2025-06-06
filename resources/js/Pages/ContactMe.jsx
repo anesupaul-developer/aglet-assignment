@@ -90,7 +90,7 @@ export default function ContactMe({ auth}) {
                                                     <h2 className="text-xl font-semibold text-white">Socials</h2>
                                                 </div>
                                                 <div className="flex flex-wrap gap-3">
-                                                    <Link
+                                                    <a
                                                         href="https://github.com/anesupaul-developer"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
@@ -98,8 +98,8 @@ export default function ContactMe({ auth}) {
                                                     >
                                                         <GithubIcon className="h-4 w-4 mr-2" />
                                                         @Anesu
-                                                    </Link>
-                                                    <Link
+                                                    </a>
+                                                    <a
                                                         href="https://www.linkedin.com/in/anesu-paul-ngirande-71904a170/"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
@@ -107,8 +107,8 @@ export default function ContactMe({ auth}) {
                                                     >
                                                         <Linkedin className="h-4 w-4 mr-2" />
                                                         Anesu Ngirande
-                                                    </Link>
-                                                    <Link
+                                                    </a>
+                                                    <a
                                                         href="https://www.youtube.com/@anesu6184"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
@@ -116,8 +116,8 @@ export default function ContactMe({ auth}) {
                                                     >
                                                         <YoutubeIcon className="h-4 w-4 mr-2" />
                                                         @anesu6184
-                                                    </Link>
-                                                    <Link
+                                                    </a>
+                                                    <a
                                                         href="https://packagist.org/users/anesupaul-developer/packages/"
                                                         target="_blank"
                                                         rel="noopener noreferrer"
@@ -125,7 +125,7 @@ export default function ContactMe({ auth}) {
                                                     >
                                                         <PackageIcon className="h-4 w-4 mr-2" />
                                                         @Packagist
-                                                    </Link>
+                                                    </a>
                                                 </div>
                                             </div>
                                         </div>
