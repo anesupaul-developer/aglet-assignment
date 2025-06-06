@@ -50,6 +50,13 @@ const MovieHeader = ({searchQuery, setSearchQuery, isLoggedIn}) => {
                               </a> : ""
                       }
 
+                      {
+                          isLoggedIn ?
+                              <a href="/contact-me" className="hover:text-red-500 transition-colors">
+                                  Contact Me
+                              </a> : ""
+                      }
+
 
                       { isLoggedIn ?
                           <Button

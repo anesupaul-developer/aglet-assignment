@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ContactMeController;
 use App\Http\Controllers\FavouriteMovieController;
 use App\Http\Controllers\MovieListingController;
 use App\Http\Controllers\ProfileController;
@@ -22,9 +23,7 @@ Route::get('/movies/autocomplete', [MovieListingController::class, 'autocomplete
     ->name('movie-listing.autocomplete');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/contact-me', [ContactMeController::class, 'index'])->name('contactme.index');
 
     Route::controller(FavouriteMovieController::class)->group(function () {
         Route::get('/favourite-movies', 'index')->name('favourite-movies.index');

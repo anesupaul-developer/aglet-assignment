@@ -19,9 +19,10 @@ export default function GuestLayout({ children }) {
         <>
             <Toaster position="top-right" />
             <div className="flex min-h-screen flex-col items-center bg-gray-100 pt-6 sm:justify-center sm:pt-0">
+                <h1 className="text-center text-blue-500 mb-3 text-[36px]">Team Aglet :-)</h1>
                 <div>
                     <Link href="/">
-                        <ApplicationLogo className="h-20 w-20 fill-current text-gray-500" />
+                        <ApplicationLogo className="h-10 w-10 fill-current text-gray-500" />
                     </Link>
                 </div>
 
